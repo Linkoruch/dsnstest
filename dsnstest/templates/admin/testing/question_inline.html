@@ -1,22 +1,20 @@
 {% load i18n admin_urls static admin_modify %}
 
-<div class="inline-group" id="{{ inline_admin_formset.formset.prefix }}-group">
-  <fieldset class="module aligned">
-    {% if inline_admin_formset.formset.can_delete and inline_admin_formset.opts.can_delete %}
-      <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
-    {% endif %}
+<div class="inline-group question-inline" data-inline-prefix="{{ inline_admin_formset.formset.prefix }}">
+  {{ inline_admin_formset.formset.management_form }}
+  {{ inline_admin_formset.formset.non_form_errors }}
 
-    {{ inline_admin_formset.formset.management_form }}
-    {{ inline_admin_formset.formset.non_form_errors }}
-
+  <div class="question-list">
     {% for inline_admin_form in inline_admin_formset %}
-      <div class="inline-related" id="{{ inline_admin_formset.formset.prefix }}-{{ forloop.counter0 }}">
-        {% if inline_admin_formset.formset.can_delete and inline_admin_form.original %}
-          <div class="delete">
+      {% with nested_formset=inline_admin_form.form.nested %}
+      <div class="question-card" data-question-prefix="{{ inline_admin_form.form.prefix }}">
+        <div class="question-header">
+          <h3>Питання {{ forloop.counter }}</h3>
+          {% if inline_admin_formset.formset.can_delete and inline_admin_form.original %}
             {{ inline_admin_form.deletion_field.field }}
-            {{ inline_admin_form.deletion_field.label_tag }}
-          </div>
-        {% endif %}
+            <button type="button" class="btn btn-danger btn-delete-question" data-target="{{ inline_admin_form.form.prefix }}">Видалити питання</button>
+          {% endif %}
+        </div>
 
         {% for fieldset in inline_admin_form %}
           {% for line in fieldset %}
@@ -30,20 +28,97 @@
           {% endfor %}
         {% endfor %}
 
-        {% if inline_admin_form.form.nested %}
-          {{ inline_admin_form.form.nested.management_form }}
-          {{ inline_admin_form.form.nested.non_form_errors }}
+        {% if nested_formset %}
+          <div class="answers-block" data-nested-prefix="{{ nested_formset.prefix }}">
+            {{ nested_formset.management_form }}
+            {{ nested_formset.non_form_errors }}
 
-          <div class="inline-group nested">
-            <h3>Відповіді</h3>
-            {% for nested_form in inline_admin_form.form.nested.forms %}
-              <div class="inline-related">
-                {% if inline_admin_form.form.nested.can_delete %}
-                  <div class="delete">
-                    {{ nested_form.DELETE }} {{ nested_form.DELETE.label_tag }}
-                  </div>
+            <div class="answers-list">
+              {% for nested_form in nested_formset.forms %}
+                <div class="answer-row">
+                  {% if nested_formset.can_delete %}
+                    {{ nested_form.DELETE }}
+                    <button type="button" class="btn btn-link btn-delete-answer">Видалити</button>
+                  {% endif %}
+
+                  {% for field in nested_form.visible_fields %}
+                    <div class="form-row field-{{ field.name }}">
+                      {{ field.errors }}
+                      {{ field.label_tag }} {{ field }}
+                      {% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p>{% endif %}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="answer-actions">
+              <button type="button" class="btn btn-secondary btn-add-answer">Додати відповідь</button>
+            </div>
+
+            <template class="answer-template">
+              {% with nested_empty=nested_formset.empty_form %}
+              <div class="answer-row">
+                {% if nested_formset.can_delete %}
+                  {{ nested_empty.DELETE }}
+                  <button type="button" class="btn btn-link btn-delete-answer">Видалити</button>
                 {% endif %}
+                {% for field in nested_empty.visible_fields %}
+                  <div class="form-row field-{{ field.name }}">
+                    {{ field.errors }}
+                    {{ field.label_tag }} {{ field }}
+                    {% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p>{% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+              {% endwith %}
+            </template>
+          </div>
+        {% endif %}
+      </div>
+      {% endwith %}
+    {% endfor %}
+  </div>
 
+  <div class="question-actions">
+    <button type="button" class="btn btn-primary btn-add-question">Додати питання</button>
+  </div>
+
+  <template id="{{ inline_admin_formset.formset.prefix }}-empty-question">
+    {% with inline_admin_form=inline_admin_formset.empty_form nested_formset=inline_admin_form.form.nested %}
+    <div class="question-card" data-question-prefix="__prefix__">
+      <div class="question-header">
+        <h3>Нове питання</h3>
+        {% if inline_admin_formset.formset.can_delete %}
+          {{ inline_admin_form.deletion_field.field }}
+          <button type="button" class="btn btn-danger btn-delete-question">Видалити питання</button>
+        {% endif %}
+      </div>
+
+      {% for fieldset in inline_admin_form %}
+        {% for line in fieldset %}
+          {% for field in line %}
+            <div class="form-row field-{{ field.name }}">
+              {{ field.errors }}
+              {{ field.label_tag }} {{ field.field }}
+              {% if field.field.help_text %}<p class="help">{{ field.field.help_text|safe }}</p>{% endif %}
+            </div>
+          {% endfor %}
+        {% endfor %}
+      {% endfor %}
+
+      {% if nested_formset %}
+        <div class="answers-block" data-nested-prefix="{{ nested_formset.prefix }}">
+          {{ nested_formset.management_form }}
+          {{ nested_formset.non_form_errors }}
+
+          <div class="answers-list">
+            {% for nested_form in nested_formset.forms %}
+              <div class="answer-row">
+                {% if nested_formset.can_delete %}
+                  {{ nested_form.DELETE }}
+                  <button type="button" class="btn btn-link btn-delete-answer">Видалити</button>
+                {% endif %}
                 {% for field in nested_form.visible_fields %}
                   <div class="form-row field-{{ field.name }}">
                     {{ field.errors }}
@@ -54,9 +129,107 @@
               </div>
             {% endfor %}
           </div>
-        {% endif %}
-      </div>
-    {% endfor %}
-  </fieldset>
+
+          <div class="answer-actions">
+            <button type="button" class="btn btn-secondary btn-add-answer">Додати відповідь</button>
+          </div>
+
+          <template class="answer-template">
+            {% with nested_empty=nested_formset.empty_form %}
+            <div class="answer-row">
+              {% if nested_formset.can_delete %}
+                {{ nested_empty.DELETE }}
+                <button type="button" class="btn btn-link btn-delete-answer">Видалити</button>
+              {% endif %}
+              {% for field in nested_empty.visible_fields %}
+                <div class="form-row field-{{ field.name }}">
+                  {{ field.errors }}
+                  {{ field.label_tag }} {{ field }}
+                  {% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p>{% endif %}
+                </div>
+              {% endfor %}
+            </div>
+            {% endwith %}
+          </template>
+        </div>
+      {% endif %}
+    </div>
+    {% endwith %}
+  </template>
 </div>
 
+<script>
+(function(){
+  const container = document.querySelector('.question-inline[data-inline-prefix="{{ inline_admin_formset.formset.prefix }}"]');
+  if(!container) return;
+
+  const totalInput = container.querySelector('#id_{{ inline_admin_formset.formset.prefix }}-TOTAL_FORMS');
+  const emptyQuestionTemplate = document.querySelector('#{{ inline_admin_formset.formset.prefix }}-empty-question');
+  const questionList = container.querySelector('.question-list');
+
+  function replacePrefix(html, index){
+    const regex = new RegExp('__prefix__', 'g');
+    return html.replace(regex, index);
+  }
+
+  function addQuestion(){
+    const idx = parseInt(totalInput.value || '0', 10);
+    const html = replacePrefix(emptyQuestionTemplate.innerHTML, idx);
+    const frag = document.createRange().createContextualFragment(html);
+    questionList.appendChild(frag);
+    totalInput.value = idx + 1;
+  }
+
+  function addAnswer(answersBlock){
+    const total = answersBlock.querySelector('[id$="-TOTAL_FORMS"]');
+    const template = answersBlock.querySelector('.answer-template');
+    if(!total || !template) return;
+    const idx = parseInt(total.value || '0', 10);
+    const html = replacePrefix(template.innerHTML, idx);
+    const frag = document.createRange().createContextualFragment(html);
+    answersBlock.querySelector('.answers-list').appendChild(frag);
+    total.value = idx + 1;
+  }
+
+  function markDelete(wrapper){
+    const checkbox = wrapper.querySelector('input[type="checkbox"][name$="-DELETE"]');
+    if(checkbox){
+      checkbox.checked = true;
+      wrapper.classList.add('marked-for-delete');
+    }
+  }
+
+  container.addEventListener('click', function(e){
+    const addQuestionBtn = e.target.closest('.btn-add-question');
+    if(addQuestionBtn){
+      e.preventDefault();
+      addQuestion();
+      return;
+    }
+
+    const addAnswerBtn = e.target.closest('.btn-add-answer');
+    if(addAnswerBtn){
+      e.preventDefault();
+      const answersBlock = addAnswerBtn.closest('.answers-block');
+      if(answersBlock) addAnswer(answersBlock);
+      return;
+    }
+
+    const deleteAnswerBtn = e.target.closest('.btn-delete-answer');
+    if(deleteAnswerBtn){
+      e.preventDefault();
+      const row = deleteAnswerBtn.closest('.answer-row');
+      if(row) markDelete(row);
+      return;
+    }
+
+    const deleteQuestionBtn = e.target.closest('.btn-delete-question');
+    if(deleteQuestionBtn){
+      e.preventDefault();
+      const card = deleteQuestionBtn.closest('.question-card');
+      if(card) markDelete(card);
+      return;
+    }
+  });
+})();
+</script>

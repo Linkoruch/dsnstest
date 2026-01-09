@@ -60,16 +60,26 @@ class TestAdmin(admin.ModelAdmin):
     # search_fields = ("title",)  # поле пошуку прибрали
 
     def save_formset(self, request, form, formset, change):
+        # Save questions first
         instances = formset.save(commit=False)
         for obj in instances:
             obj.save()
         for obj in formset.deleted_objects:
             obj.delete()
-        # Save nested formsets for questions
+
+        # Save nested answers for each question
         for inline_form in formset.forms:
             nested = getattr(inline_form, "nested", None)
-            if nested is not None:
-                nested.save()
+            if nested is None:
+                continue
+            nested.instance = inline_form.instance
+            nested_instances = nested.save(commit=False)
+            for obj in nested_instances:
+                obj.question = inline_form.instance
+                obj.save()
+            for obj in getattr(nested, "deleted_objects", []):
+                obj.delete()
+
         formset.save_m2m()
 
 
