@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>Старт тесту</title>
+</head>
+<body>
+  <h1>{{ test.title }}</h1>
+  {% if test.description %}<p>{{ test.description }}</p>{% endif %}
+
+  {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <label>Прізвище, ім'я:
+      <input name="full_name" required>
+    </label>
+    <button type="submit">Почати</button>
+  </form>
+
+  <p><a href="{% url 'testing:test_list' %}">Назад</a></p>
+</body>
+</html>

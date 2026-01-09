@@ -1,0 +1,62 @@
+{% load i18n admin_urls static admin_modify %}
+
+<div class="inline-group" id="{{ inline_admin_formset.formset.prefix }}-group">
+  <fieldset class="module aligned">
+    {% if inline_admin_formset.formset.can_delete and inline_admin_formset.opts.can_delete %}
+      <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
+    {% endif %}
+
+    {{ inline_admin_formset.formset.management_form }}
+    {{ inline_admin_formset.formset.non_form_errors }}
+
+    {% for inline_admin_form in inline_admin_formset %}
+      <div class="inline-related" id="{{ inline_admin_formset.formset.prefix }}-{{ forloop.counter0 }}">
+        {% if inline_admin_formset.formset.can_delete and inline_admin_form.original %}
+          <div class="delete">
+            {{ inline_admin_form.deletion_field.field }}
+            {{ inline_admin_form.deletion_field.label_tag }}
+          </div>
+        {% endif %}
+
+        {% for fieldset in inline_admin_form %}
+          {% for line in fieldset %}
+            {% for field in line %}
+              <div class="form-row field-{{ field.name }}">
+                {{ field.errors }}
+                {{ field.label_tag }} {{ field.field }}
+                {% if field.field.help_text %}<p class="help">{{ field.field.help_text|safe }}</p>{% endif %}
+              </div>
+            {% endfor %}
+          {% endfor %}
+        {% endfor %}
+
+        {% if inline_admin_form.form.nested %}
+          {{ inline_admin_form.form.nested.management_form }}
+          {{ inline_admin_form.form.nested.non_form_errors }}
+
+          <div class="inline-group nested">
+            <h3>Відповіді</h3>
+            {% for nested_form in inline_admin_form.form.nested.forms %}
+              <div class="inline-related">
+                {% if inline_admin_form.form.nested.can_delete %}
+                  <div class="delete">
+                    {{ nested_form.DELETE }} {{ nested_form.DELETE.label_tag }}
+                  </div>
+                {% endif %}
+
+                {% for field in nested_form.visible_fields %}
+                  <div class="form-row field-{{ field.name }}">
+                    {{ field.errors }}
+                    {{ field.label_tag }} {{ field }}
+                    {% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p>{% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </fieldset>
+</div>
+

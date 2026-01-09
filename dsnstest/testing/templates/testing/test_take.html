@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>Проходження тесту</title>
+</head>
+<body>
+  <h1>{{ test.title }}</h1>
+  <p>Користувач: <b>{{ full_name }}</b></p>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% for q in questions %}
+      <fieldset style="margin-bottom:16px">
+        <legend><b>Питання {{ forloop.counter }}.</b> {{ q.text }}</legend>
+
+        {% for opt in q.options.all %}
+          <label style="display:block; margin:4px 0;">
+            <input type="radio" name="q_{{ q.id }}" value="{{ opt.id }}">
+            {{ opt.text }}
+          </label>
+        {% endfor %}
+      </fieldset>
+    {% endfor %}
+
+    <button type="submit">Завершити тест</button>
+  </form>
+</body>
+</html>

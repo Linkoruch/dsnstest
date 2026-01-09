@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>Тести ДСНС</title>
+</head>
+<body>
+  <h1>Доступні тести</h1>
+
+  <ul>
+    {% for t in tests %}
+      <li>
+        <b>{{ t.title }}</b>
+        {% if t.description %}<div>{{ t.description }}</div>{% endif %}
+        <a href="{% url 'testing:test_start' t.id %}">Розпочати</a>
+      </li>
+    {% empty %}
+      <li>Немає опублікованих тестів.</li>
+    {% endfor %}
+  </ul>
+
+  <p><a href="/admin/">Адмін-панель</a></p>
+</body>
+</html>

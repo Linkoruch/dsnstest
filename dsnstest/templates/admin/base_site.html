@@ -1,0 +1,137 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+{{ block.super }}
+
+<style>
+    /* ===== Центруємо весь контент адмінки ===== */
+    #content {
+        max-width: 1100px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-top: 25px;
+    }
+
+    /* ===== ШАПКА: нормальна висота, центрований заголовок, user-tools справа ===== */
+    #header {
+        position: relative;
+        height: 52px;          /* ⬅ фіксована висота */
+        min-height: 52px;      /* ⬅ без роздування */
+        padding: 0 20px;       /* ⬅ тільки горизонтальний */
+        background: #457b93;
+        box-sizing: border-box;
+    }
+
+    /* Центруємо branding (не ламаючи user-tools) */
+    #branding{
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        float: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    #branding h1{
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 22px;
+        font-weight: normal;
+        color: #ffd966;
+    }
+
+    /* Праворуч: user-tools */
+    #user-tools{
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+    #user-tools, #user-tools *{
+        color: #ffffff !important;
+    }
+
+    /* Прибрати "Дивитися сайт" */
+    #user-tools a[href="/"],
+    #user-tools a.view-site-link{
+        display: none !important;
+    }
+
+    /* Прибрати поле "Почніть писати для фільтру..." зліва (sidebar filter) */
+    #nav-sidebar input[type="search"],
+    #nav-sidebar .nav-filter,
+    #nav-sidebar .nav-filter-wrapper{
+        display: none !important;
+    }
+
+    /* ===== ГОЛОВНЕ: секції ("ЗАГАЛЬНЕ", "АУТЕНТИФІКАЦІЯ...") НЕ клікабельні =====
+       У Django вони сидять у caption > a.section
+    */
+    .dashboard .module caption a,
+    .dashboard .module caption a:link,
+    .dashboard .module caption a:visited,
+    .dashboard .module caption a:hover,
+    .dashboard .module caption a:active{
+        text-decoration: none !important;
+        cursor: default !important;
+    }
+
+    /* ===== FIX: перемикач теми (світла / темна) ===== */
+
+    /* Контейнер перемикача */
+    .theme-toggle,
+    .theme-toggle-button {
+        position: relative !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        margin-left: 10px;
+    }
+
+    /* SVG / іконка всередині */
+    .theme-toggle svg,
+    .theme-toggle-button svg {
+        width: 18px;
+        height: 18px;
+        fill: #ffffff;
+    }
+
+    /* Вирівнюємо разом з user-tools */
+    #user-tools {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // 1) Робимо заголовки секцій НЕ лінками: прибираємо href
+        document.querySelectorAll(".dashboard .module caption a").forEach(function(a){
+            a.removeAttribute("href");
+            a.style.pointerEvents = "none";
+            a.style.cursor = "default";
+        });
+
+        // 2) На всякий випадок: якщо десь клік ловиться інакше — глушимо
+        document.addEventListener("click", function(e){
+            const a = e.target.closest(".dashboard .module caption a");
+            if(a){
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, true);
+    });
+</script>
+
+{% endblock %}

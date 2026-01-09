@@ -1,0 +1,35 @@
+{% load utils %}
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>Результат</title>
+</head>
+<body>
+  <h1>Результат тестування</h1>
+  <p><b>{{ attempt.full_name }}</b> — {{ attempt.test.title }}</p>
+  <p>Оцінка: <b>{{ attempt.score }}</b> / <b>{{ attempt.total }}</b></p>
+
+  <h2>Деталі</h2>
+  <ol>
+    {% for q in questions %}
+      <li>
+        <p><b>{{ q.text }}</b></p>
+        <ul>
+          {% for opt in q.options.all %}
+            {% if opt.id == selected_map|get_item:q.id %}
+              <li><u>Ваш вибір:</u> {{ opt.text }}</li>
+            {% elif opt.is_correct %}
+              <li><b>Правильна:</b> {{ opt.text }}</li>
+            {% else %}
+              <li>{{ opt.text }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ol>
+
+  <p><a href="{% url 'testing:test_list' %}">До списку тестів</a></p>
+</body>
+</html>
